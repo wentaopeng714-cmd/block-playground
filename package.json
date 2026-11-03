@@ -1,0 +1,11 @@
+{
+  "name": "block-playground",
+  "version": "12.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 58347 --bind 127.0.0.1 --directory dist",
+    "check": "node --check dist/game.js && node --check dist/world.js && node --check dist/segments.js && node --check dist/mechanisms.js && node --check dist/mixed-scenes.js && node --check dist/biomes.js && node --check dist/terrain.js && node --check dist/progression.js && node --check dist/effects.js && node --check dist/touch-controls.js",
+    "test": "node tests/world.test.mjs && node tests/segments.test.mjs && node tests/mechanisms.test.mjs && node tests/obstacle-variety.test.mjs && node tests/mixed-scenes.test.mjs && node tests/routes-3d.test.mjs && node tests/biomes.test.mjs && node tests/theme-mechanisms.test.mjs && node tests/variety.test.mjs && node tests/progression.test.mjs && node tests/touch-controls.test.mjs"
+  }
+}

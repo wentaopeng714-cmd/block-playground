@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>积木工坊 · 点选场景，自动拼接</title>
+  <meta name="description" content="从四个不断更新的候选里选择立体场景，自动拼成有高低起伏的跑酷路线，再走进去挑战自己的作品。">
+  <meta name="theme-color" content="#edf5fa">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='4' y='4' width='72' height='72' rx='20' fill='%23ffd35c'/%3E%3Cpath d='M22 26h18v18H22zm18 18h18v18H40zm0-18h18v18H40z' fill='%232a3544'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css?v=12.0">
+  <link rel="stylesheet" href="./ui-polish.css?v=12.0">
+  <link rel="stylesheet" href="./mobile.css?v=12.0">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body class="modular-mode">
+  <div id="viewport" aria-label="三维积木场景"></div>
+  <div class="sky-glow"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="积木工坊首页"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M7 7h9v9H7zm9 0h9v9h-9zm0 9h9v9h-9z"/></svg></span><span><strong>积木工坊</strong><small>BLOCK PLAYGROUND</small></span></a>
+    <span class="header-divider"></span>
+    <div class="scene-title"><input id="sceneName" aria-label="场景名称" maxlength="32" value="我的天空乐园"><span class="tiny-icon" data-icon="pen"></span><span class="save-status" id="saveStatus"><i></i> 已保存到本机</span></div>
+    <nav class="mode-switch" aria-label="游戏模式"><button id="buildMode" class="active"><span data-icon="blocks"></span>拼接场景</button><button id="runMode"><span data-icon="play"></span>跑酷试玩</button></nav>
+    <div class="header-actions"><button id="helpBtn" class="icon-button desktop" title="操作指南" aria-label="操作指南"><span data-icon="help"></span></button><button id="saveBtn" class="button button-white" title="导出场景文件"><span data-icon="download"></span><span class="desktop-label">导出</span></button><button id="toolsBtn" class="icon-button mobile-tools-toggle" aria-label="更多工具" aria-controls="rightTools" aria-expanded="false"><span data-icon="menu"></span></button><button id="playBtn" class="button button-yellow"><span data-icon="play"></span><span>开始跑酷</span><kbd>↵</kbd></button></div>
+  </header>
+
+  <div class="world-label" id="worldLabel"><span class="live-dot"></span><span>场景拼接</span><b>自动衔接</b><span class="label-divider"></span><span id="routeCount">点下面的卡片，接上第一段</span></div>
+
+  <div class="tools-scrim" id="toolsScrim" hidden></div>
+  <div class="right-tools" id="rightTools" aria-label="场景工具">
+    <div class="history-tools glass"><button class="icon-button" id="undoBtn" title="撤销（⌘Z / Ctrl Z）" aria-label="撤销"><span data-icon="undo"></span><span class="tool-label">撤销</span></button><button class="icon-button" id="redoBtn" title="重做（⌘⇧Z / Ctrl Shift Z）" aria-label="重做"><span data-icon="redo"></span><span class="tool-label">重做</span></button></div>
+    <div class="mobile-extra-tools"><button class="icon-button" id="mobileSaveBtn" aria-label="导出场景"><span data-icon="download"></span><span class="tool-label">导出</span></button><button class="icon-button" id="mobileHelpBtn" aria-label="操作指南"><span data-icon="help"></span><span class="tool-label">指南</span></button></div>
+    <div class="file-tools glass"><button class="icon-button" id="newBtn" title="重新拼一条路线" aria-label="新建路线"><span data-icon="plus"></span><span class="tool-label">新建</span></button><button class="icon-button" id="demoBtn" title="体验带机关的拼接路线" aria-label="载入拼接示例"><span data-icon="layout"></span><span class="tool-label">示例</span></button><button class="icon-button" id="homeBtn" title="查看完整路线（H）" aria-label="全景视角"><span data-icon="focus"></span><span class="tool-label">全景</span></button><button class="icon-button" id="importBtn" title="导入路线" aria-label="导入路线"><span data-icon="upload"></span><span class="tool-label">导入</span></button><button class="icon-button" id="photoBtn" title="拍摄当前场景" aria-label="拍摄当前场景"><span data-icon="camera"></span><span class="tool-label">拍照</span></button></div>
+  </div>
+
+  <div class="view-controls glass" id="viewControls"><button class="icon-button" id="zoomOut" title="缩小" aria-label="缩小"><span data-icon="minus"></span></button><span data-icon="search"></span><button class="icon-button" id="zoomIn" title="放大" aria-label="放大"><span data-icon="plus"></span></button></div>
+
+  <section class="welcome-note" id="welcomeNote"><span class="eyebrow"><i></i> PICK · COLLECT · GROW</span><h1>点选搭建，<br>跑着变强。</h1><p>顺路收材料，自动制作和升级护盾。</p></section>
+
+  <section class="build-dock module-dock glass" id="buildDock" aria-label="四个不断更新的立体场景候选">
+    <div class="dock-head"><span><b>下一站，去哪里？</b><small class="dock-desktop-copy">点选一张 · 自动衔接你的跑酷世界</small><small class="dock-mobile-copy">点一下，自动接好</small></span><span class="connected-count" id="connectedCount">已连接 0 段</span></div>
+    <div class="module-row" id="moduleRow"></div>
+    <div class="growth-strip" aria-label="材料和护盾成长"><div class="growth-wallet"><span class="growth-symbol" data-icon="gem"></span><span class="wallet-label">材料</span><b data-growth-material>0</b></div><div class="growth-track"><div class="growth-track-head"><span class="gear-count"><span data-icon="shield"></span><b data-growth-gear>护盾未制作</b></span><span class="growth-ratio" data-growth-ratio>0 / 3</span></div><div class="growth-meter" aria-hidden="true"><i data-growth-progress></i></div><small data-growth-hint>再收 3 块，自动制作护盾</small></div></div>
+  </section>
+
+  <footer class="bottom-info" id="bottomInfo"><span><i></i><b id="moduleCount">0</b> 段场景</span><span>不同风景，同一条路线。</span></footer>
+  <div class="interaction-hint" id="interactionHint"><span><kbd>点卡片</kbd> 自动拼接</span><span><kbd>拖动</kbd> 看看场景</span><span><kbd>⌘Z / Ctrl Z</kbd> 撤回上一段</span></div>
+  <div class="compass" aria-hidden="true"><span>N</span><svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" fill="none" stroke="currentColor" stroke-opacity=".25"/><path d="m27 10 6 17-6-3-6 3z" fill="currentColor"/><path d="m27 44 6-17-6 3-6-3z" fill="currentColor" opacity=".2"/></svg></div>
+
+  <section class="run-hud glass" id="runHud" hidden><div><span class="live-dot"></span><b>我的跑酷旅程</b><small>收集材料，让每一步更有底气</small></div><strong id="runTimer">00:00.0</strong><div class="challenge-info"><span id="difficultyBadge" data-level="1">简单</span><b id="mechanismHint">观察路线，继续前进</b><small id="checkpointText">进入场景段自动存档</small></div><div class="growth-strip run-growth" aria-label="材料和护盾成长"><div class="growth-wallet"><span class="growth-symbol" data-icon="gem"></span><span class="wallet-label">材料</span><b data-growth-material>0</b><span class="growth-gain" id="growthGain" aria-live="polite"></span></div><div class="growth-track"><div class="growth-track-head"><span class="gear-count"><span data-icon="shield"></span><b data-growth-gear>护盾未制作</b></span><span class="growth-ratio" data-growth-ratio>0 / 3</span></div><div class="growth-meter" aria-hidden="true"><i data-growth-progress></i></div><small data-growth-hint>再收 3 块，自动制作护盾</small></div><div class="shield-charges"><span data-shield-pips aria-hidden="true"></span><span class="charge-count" data-growth-charge>顺路收材料</span></div></div><div class="run-stats"><span>跳跃 <b id="jumpCount">0</b></span><span>重试 <b id="fallCount">0</b></span></div><button class="button button-white" id="restartBtn" aria-label="回到起点"><span data-icon="restart"></span><span class="restart-label">回到起点</span></button></section>
+  <div class="run-instructions glass" id="runInstructions" hidden><span><kbd>W A S D</kbd> / 方向键 移动</span><span><kbd>空格</kbd> 跳跃</span><span><kbd>拖动</kbd> 观察</span><span><kbd>Esc</kbd> 返回搭建</span></div>
+  <div id="touchControls" hidden><div id="joystick" role="group" aria-label="移动摇杆，按住拖动"><span class="joystick-knob"></span><small class="stick-label">移动</small></div><button id="jumpBtn" aria-label="跳跃"><span data-icon="jump"></span>跳跃</button><small class="touch-camera-hint">滑动空白处，转动视角</small></div>
+
+  <div id="toast" role="status" aria-live="polite"><span id="toastIcon"></span><span id="toastMessage"></span></div>
+  <div class="upgrade-note" id="upgradeNote" role="status" aria-live="polite"><span class="upgrade-emblem" data-icon="shield"></span><span><small id="upgradeEyebrow">AUTOMATIC CRAFT</small><b id="upgradeTitle">护盾制作完成</b><span id="upgradeDetail"></span></span><strong id="upgradeLevel">01</strong></div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden><section class="modal glass" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="closeModal" aria-label="关闭"><span data-icon="close"></span></button><div class="modal-badge" id="modalBadge"><span data-icon="blocks"></span></div><h2 id="modalTitle"></h2><div id="modalContent"></div><div class="modal-actions" id="modalActions"></div></section></div>
+  <input id="importInput" type="file" accept=".json,application/json" hidden>
+  <div class="loading" id="loading"><span class="loading-cube"></span><strong>正在打开你的积木世界</strong><small>一点灵感，就能搭出无限可能。</small></div>
+  <script type="module" src="./game.js?v=12.0"></script>
+</body>
+</html>
